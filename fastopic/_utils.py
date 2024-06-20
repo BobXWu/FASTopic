@@ -20,7 +20,6 @@ def check_fitted(model):
         raise ValueError(msg % {'name': type(model).__name__})
 
 
-
 class Logger:
     def __init__(self, level):
         self.logger = logging.getLogger('FASTopic')
