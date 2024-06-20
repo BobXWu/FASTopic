@@ -42,9 +42,9 @@ from topmost.preprocessing import Preprocessing
 
 docs = fetch_20newsgroups(subset='all',  remove=('headers', 'footers', 'quotes'))['data']
 
-preprocessing = Preprocessing(vocab_size=10000)
+preprocessing = Preprocessing(vocab_size=10000, stopwords='English')
 
-model = FASTopic(50, preprocessing)
+model = FASTopic(num_topics=50, preprocessing)
 topic_top_words, doc_topic_dist = model.fit_transform(docs)
 
 ```
@@ -69,12 +69,12 @@ your_dataset = [
     'doc 2', # ...
 ]
 
-# preprocess the dataset.
-# This step tokenizes docs, removes stopwords, and sets max vocabulary size, etc..
-# Pass your tokenizer as preprocessing = Preprocessing(vocab_size=5000, tokenizer=your_tokenizer)
-preprocessing = Preprocessing(vocab_size=10000)
+# Preprocess the dataset. This step tokenizes docs, removes stopwords, and sets max vocabulary size, etc..
+# Pass your tokenizer as:
+#   preprocessing = Preprocessing(vocab_size=your_vocab_size, tokenizer=your_tokenizer, stopwords=your_stopwords_set)
+preprocessing = Preprocessing(stopwords='English')
 
-model = FASTopic(50, preprocessing)
+model = FASTopic(num_topics=50, preprocessing)
 topic_top_words, doc_topic_dist = model.fit_transform(docs)
 
 ```
