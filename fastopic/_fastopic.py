@@ -22,12 +22,8 @@ class fastopic(nn.Module):
 
     def init(self,
              vocab_size: int,
-             doc_embeddings,
+             embed_size: int
             ):
-
-        self.doc_embeddings = nn.Parameter(torch.from_numpy(doc_embeddings), requires_grad=False)
-
-        embed_size = self.doc_embeddings.shape[1]
 
         self.word_embeddings = nn.init.trunc_normal_(torch.empty(vocab_size, embed_size))
         self.word_embeddings = nn.Parameter(F.normalize(self.word_embeddings))
@@ -42,24 +38,32 @@ class fastopic(nn.Module):
         self.DT_ETP = ETP(self.DT_alpha, init_b_dist=self.topic_weights)
         self.TW_ETP = ETP(self.TW_alpha, init_b_dist=self.word_weights)
 
-    @property
-    def transp_DT(self):
-        _, transp = self.DT_ETP(self.doc_embeddings, self.topic_embeddings)
+    def get_transp_DT(self,
+                      doc_embeddings,
+                    ):
+
+        topic_embeddings = self.topic_embeddings.detach().to(doc_embeddings.device)
+        _, transp = self.DT_ETP(doc_embeddings, topic_embeddings)
+
         return transp.detach().cpu().numpy()
 
     # only for testing
     def get_beta(self):
         _, transp_TW = self.TW_ETP(self.topic_embeddings, self.word_embeddings)
-
         # use transport plan as beta
         beta = transp_TW * transp_TW.shape[0]
 
         return beta
 
     # only for testing
-    def get_theta(self, doc_embeddings):
-        dist = pairwise_euclidean_distance(doc_embeddings, self.topic_embeddings)
-        train_dist = pairwise_euclidean_distance(self.doc_embeddings, self.topic_embeddings)
+    def get_theta(self,
+                  doc_embeddings,
+                  train_doc_embeddings
+                ):
+
+        topic_embeddings = self.topic_embeddings.cpu().to(doc_embeddings.device)
+        dist = pairwise_euclidean_distance(doc_embeddings, topic_embeddings)
+        train_dist = pairwise_euclidean_distance(train_doc_embeddings, topic_embeddings)
 
         exp_dist = torch.exp(-dist / self.theta_temp)
         exp_train_dist = torch.exp(-train_dist / self.theta_temp)
@@ -69,8 +73,8 @@ class fastopic(nn.Module):
 
         return theta
 
-    def forward(self, train_bow):
-        loss_DT, transp_DT = self.DT_ETP(self.doc_embeddings, self.topic_embeddings)
+    def forward(self, train_bow, doc_embeddings):
+        loss_DT, transp_DT = self.DT_ETP(doc_embeddings, self.topic_embeddings)
         loss_TW, transp_TW = self.TW_ETP(self.topic_embeddings, self.word_embeddings)
 
         loss_ETP = loss_DT + loss_TW
@@ -90,3 +94,6 @@ class fastopic(nn.Module):
         }
 
         return rst_dict
+
+
+

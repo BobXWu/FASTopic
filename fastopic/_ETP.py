@@ -28,12 +28,12 @@ class ETP(nn.Module):
         if self.init_a_dist is None:
             a = (torch.ones(M.shape[0]) / M.shape[0]).unsqueeze(1).to(device)
         else:
-            a = F.softmax(self.a_dist, dim=0)
+            a = F.softmax(self.a_dist, dim=0).to(device)
 
         if self.init_b_dist is None:
             b = (torch.ones(M.shape[1]) / M.shape[1]).unsqueeze(1).to(device)
         else:
-            b = F.softmax(self.b_dist, dim=0)
+            b = F.softmax(self.b_dist, dim=0).to(device)
 
         u = (torch.ones_like(a) / a.size()[0]).to(device) # Kx1
 
