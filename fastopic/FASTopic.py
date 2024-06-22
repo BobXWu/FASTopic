@@ -166,7 +166,7 @@ class FASTopic:
             raise ValueError("Must set doc embeddings.")
 
         if doc_embeddings is None:
-            doc_embeddings = self.doc_embed_model.encode(docs, convert_to_tensor=True)
+            doc_embeddings = torch.as_tensor(self.doc_embed_model.encode(docs))
             if not self.save_memory:
                 doc_embeddings = doc_embeddings.to(self.device)
 

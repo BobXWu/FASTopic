@@ -60,8 +60,7 @@ class fastopic(nn.Module):
                   doc_embeddings,
                   train_doc_embeddings
                 ):
-
-        topic_embeddings = self.topic_embeddings.cpu().to(doc_embeddings.device)
+        topic_embeddings = self.topic_embeddings.detach().to(doc_embeddings.device)
         dist = pairwise_euclidean_distance(doc_embeddings, topic_embeddings)
         train_dist = pairwise_euclidean_distance(train_doc_embeddings, topic_embeddings)
 
