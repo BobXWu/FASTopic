@@ -1,6 +1,6 @@
 # FASTopic
 
-![stars](https://img.shields.io/github/stars/bobxwu/FASTopic?logo=github)
+[![stars](https://img.shields.io/github/stars/bobxwu/FASTopic?logo=github)](https://github.com/BobXWu/Fastopic)
 [![PyPI](https://img.shields.io/pypi/v/fastopic)](https://pypi.org/project/fastopic)
 [![Downloads](https://static.pepy.tech/badge/fastopic)](https://pepy.tech/project/fastopic)
 [![LICENSE](https://img.shields.io/github/license/bobxwu/fastopic)](https://www.apache.org/licenses/LICENSE-2.0/)
@@ -9,15 +9,18 @@
 
 
 FASTopic is a fast, adaptive, stable, and transferable topic model, different
-from previous conventional (LDA), VAE-based (ProLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
-It leverages optimal transport between the embeddings from pretrained Transformers to model topics and topic distributions of documents.
+from previous the conventional (LDA), VAE-based (ProLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
+It leverages optimal transport between the document, topic, and word embeddings from pretrained Transformers to model topics and topic distributions of documents.
 
+Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm](https://arxiv.org/pdf/2405.17978.pdf)**
 
-<img src='docs/img/illustration.svg' with='300pt'></img>
+<img src='https://github.com/BobXWu/FASTopic/raw/master/docs/img/illustration.svg' with='300pt'></img>
 
 ## Tutorials
 
 We release a complete [tutorial](https://github.com/BobXWu/FASTopic/blob/master/tutorials/tutorials_FASTopic.ipynb) on FASTopic.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bduHWL5_bvsl4EYOgimCOmU-7RfnXqrX?usp=sharing)
 
 
 ## Installation
@@ -52,7 +55,7 @@ topic_top_words, doc_topic_dist = model.fit_transform(docs)
 
 ```
 
-`topic_top_words` is a list of the top words in discovered topics.
+`topic_top_words` is a list containing the top words of discovered topics.
 `doc_topic_dist` is the topic distributions of documents (doc-topic distributions),
 a numpy array with shape $N \times K$ (number of documents $N$ and number of topics $K$).
 
@@ -66,7 +69,7 @@ from fastopic import FASTopic
 from topmost.preprocessing import Preprocessing
 
 # Prepare your dataset.
-your_dataset = [
+docs = [
     'doc 1',
     'doc 2', # ...
 ]
@@ -160,3 +163,7 @@ If you want to use our package, please cite our [paper](https://arxiv.org/pdf/24
         journal={arXiv preprint arXiv:2405.17978},
         year={2024}
     }
+
+## Contact
+- We welcome your contributions to this project. Please feel free to submit pull requests.
+- If you encounter any issues, please either directly contact **Xiaobao Wu (xiaobao002@e.ntu.edu.sg)** or leave an issue in the GitHub repo.
