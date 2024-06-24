@@ -20,6 +20,8 @@ class fastopic(nn.Module):
         self.TW_alpha = TW_alpha
         self.theta_temp = theta_temp
 
+        self.epsilon = 1e-12
+
     def init(self,
              vocab_size: int,
              embed_size: int
@@ -84,7 +86,7 @@ class fastopic(nn.Module):
         # Dual Semantic-relation Reconstruction
         recon = torch.matmul(theta, beta)
 
-        loss_DSR = -(train_bow * recon.log()).sum(axis=1).mean()
+        loss_DSR = -(train_bow * (recon + self.epsilon).log()).sum(axis=1).mean()
 
         loss = loss_DSR + loss_ETP
 

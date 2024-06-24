@@ -9,18 +9,37 @@
 
 
 FASTopic is a fast, adaptive, stable, and transferable topic model, different
-from previous the conventional (LDA), VAE-based (ProLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
+from the previous conventional (LDA), VAE-based (ProLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
 It leverages optimal transport between the document, topic, and word embeddings from pretrained Transformers to model topics and topic distributions of documents.
 
 Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm](https://arxiv.org/pdf/2405.17978.pdf)**
 
 <img src='https://github.com/BobXWu/FASTopic/raw/master/docs/img/illustration.svg' with='300pt'></img>
 
+- [FASTopic](#fastopic)
+  - [Tutorials](#tutorials)
+  - [Installation](#installation)
+  - [Quick Start](#quick-start)
+  - [Usage](#usage)
+    - [Try FASTopic on your dataset](#try-fastopic-on-your-dataset)
+    - [Topic info](#topic-info)
+    - [Topic hierarchy](#topic-hierarchy)
+    - [Topic weights](#topic-weights)
+    - [Topic activity over time](#topic-activity-over-time)
+  - [APIs](#apis)
+    - [Common](#common)
+    - [Visualization](#visualization)
+  - [Q\&A](#qa)
+  - [Contact](#contact)
+  - [Citation](#citation)
+
+
 ## Tutorials
 
-We release a complete [tutorial](https://github.com/BobXWu/FASTopic/blob/master/tutorials/tutorials_FASTopic.ipynb) on FASTopic.
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bduHWL5_bvsl4EYOgimCOmU-7RfnXqrX?usp=sharing)
+| Method | API |
+| ------ | --- |
+| A complete tutorial on FASTopic. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bduHWL5_bvsl4EYOgimCOmU-7RfnXqrX?usp=sharing) |
+| FASTopic with other languages. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1_b55QpVQGFBX9PsyrYfNxDzbJ1IjrUdH?usp=sharing) |
 
 
 ## Installation
@@ -28,30 +47,30 @@ We release a complete [tutorial](https://github.com/BobXWu/FASTopic/blob/master/
 Install FASTopic with `pip`:
 
 ```bash
-pip install fastopic
+    pip install fastopic
 ```
 
 Otherwise, install FASTopic from the source:
 
 ```bash
-pip install git+https://github.com/bobxwu/FASTopic.git
+    pip install git+https://github.com/bobxwu/FASTopic.git
 ```
 
 ## Quick Start
 
-Discover topics from 20newsgroups.
+Discover topics from 20newsgroups with the topic number as `50`.
 
 ```python
-from fastopic import FASTopic
-from sklearn.datasets import fetch_20newsgroups
-from topmost.preprocessing import Preprocessing
+    from fastopic import FASTopic
+    from sklearn.datasets import fetch_20newsgroups
+    from topmost.preprocessing import Preprocessing
 
-docs = fetch_20newsgroups(subset='all',  remove=('headers', 'footers', 'quotes'))['data']
+    docs = fetch_20newsgroups(subset='all',  remove=('headers', 'footers', 'quotes'))['data']
 
-preprocessing = Preprocessing(vocab_size=10000, stopwords='English')
+    preprocessing = Preprocessing(vocab_size=10000, stopwords='English')
 
-model = FASTopic(num_topics=50, preprocessing)
-topic_top_words, doc_topic_dist = model.fit_transform(docs)
+    model = FASTopic(50, preprocessing)
+    topic_top_words, doc_topic_dist = model.fit_transform(docs)
 
 ```
 
@@ -65,22 +84,22 @@ a numpy array with shape $N \times K$ (number of documents $N$ and number of top
 ### Try FASTopic on your dataset
 
 ```python
-from fastopic import FASTopic
-from topmost.preprocessing import Preprocessing
+    from fastopic import FASTopic
+    from topmost.preprocessing import Preprocessing
 
-# Prepare your dataset.
-docs = [
-    'doc 1',
-    'doc 2', # ...
-]
+    # Prepare your dataset.
+    docs = [
+        'doc 1',
+        'doc 2', # ...
+    ]
 
-# Preprocess the dataset. This step tokenizes docs, removes stopwords, and sets max vocabulary size, etc..
-# Pass your tokenizer as:
-#   preprocessing = Preprocessing(vocab_size=your_vocab_size, tokenizer=your_tokenizer, stopwords=your_stopwords_set)
-preprocessing = Preprocessing(stopwords='English')
+    # Preprocess the dataset. This step tokenizes docs, removes stopwords, and sets max vocabulary size, etc.
+    # Pass your tokenizer as:
+    #   preprocessing = Preprocessing(vocab_size=your_vocab_size, tokenizer=your_tokenizer, stopwords=your_stopwords_set)
+    preprocessing = Preprocessing(stopwords='English')
 
-model = FASTopic(num_topics=50, preprocessing)
-topic_top_words, doc_topic_dist = model.fit_transform(docs)
+    model = FASTopic(50, preprocessing)
+    topic_top_words, doc_topic_dist = model.fit_transform(docs)
 ```
 
 
@@ -89,20 +108,20 @@ topic_top_words, doc_topic_dist = model.fit_transform(docs)
 We can get the top words and their probabilities of a topic.
 
 ```python
-model.get_topic(topic_idx=36)
+    model.get_topic(topic_idx=36)
 
-(('impeachment', 0.008047104),
- ('mueller', 0.0075936727),
- ('trump', 0.0066773472),
- ('committee', 0.0057785935),
- ('inquiry', 0.005647915))
+    (('impeachment', 0.008047104),
+    ('mueller', 0.0075936727),
+    ('trump', 0.0066773472),
+    ('committee', 0.0057785935),
+    ('inquiry', 0.005647915))
 ```
 
 We can visualize these topic info.
 
 ```python
-fig = model.visualize_topic(top_n=5)
-fig.show()
+    fig = model.visualize_topic(top_n=5)
+    fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_info.png?raw=true' with='300pt'></img>
@@ -114,8 +133,8 @@ We use the learned topic embeddings and `scipy.cluster.hierarchy` to build a hie
 
 
 ```python
-fig = model.visualize_topic_hierarchy()
-fig.show()
+    fig = model.visualize_topic_hierarchy()
+    fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_hierarchy.png?raw=true' with='300pt'></img>
@@ -127,8 +146,8 @@ fig.show()
 We plot the weights of topics in the given dataset.
 
 ```python
-fig = model.visualize_topic_weights(top_n=20, height=500)
-fig.show()
+    fig = model.visualize_topic_weights(top_n=20, height=500)
+    fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_weight.png?raw=true' with='300pt'></img>
@@ -144,18 +163,86 @@ We additionally input the time slices of documents, `time_slices` to compute and
 
 
 ```python
-act = model.topic_activity_over_time(time_slices)
-fig = model.visualize_topic_activity(top_n=6, topic_activity=act, time_slices=time_slices)
-fig.show()
+    act = model.topic_activity_over_time(time_slices)
+    fig = model.visualize_topic_activity(top_n=6, topic_activity=act, time_slices=time_slices)
+    fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_activity.png?raw=true' with='300pt'></img>
 
 
 
+## APIs
+
+We summarize the frequently used APIs of FASTopic here. It's easier for you to look up.
+
+### Common
+
+| Method | API  | 
+|-----------------------|---|
+| Fit the model    |  `.fit(docs)` |
+| Fit the model and predict documents  |  `.fit_transform(docs)` |
+| Predict new documents  |  `.transform(new_docs)` |
+| Get topic-word distribution matrix    |  `.get_beta()` |
+| Get top words of all topics    |  `.get_top_words()` |
+| Get topic weights over the input dataset    |  `.get_topic_weights()` |
+| Get topic activity over time    |  `.topic_activity_over_time(time_slices)` |
+| Save model    |  `.save("./model.zip")` |
+| Load model    |  `.load("./model.zip")` |
+
+
+### Visualization
+
+| Method | API  | 
+|-----------------------|---|
+| Visualize topics  | `.visualize_topic(top_n=5)` or `.visualize_topic(topic_idx=[1, 2, 3])`    |
+| Visualize topic weights  | `.visualize_topic_weights(top_n=5)` or `.visualize_topic_weights(topic_idx=[1, 2, 3])`    |
+| Visualize topic hierarchy  | `.visualize_topic_hierarchy()`    |
+| Visualize topic activity  | `.visualize_topic_activity(top_n=5, topic_activity=topic_activity, time_slices=time_slices)`    |
+
+
+
+
+## Q&A
+
+1. **Meet the `out of memory` error. My GPU memory is not enough due to large datasets. What should I do?**
+
+    You can try to set `save_memory=True` and  `batch_size` in FASTopic.
+    `batch_size` should not be too small, otherwise it may damage performance.
+
+
+    ```python
+        model = FASTopic(50, save_memory=True, batch_size=2000)
+    ```
+
+    Or you can run FASTopic on the CPU as
+
+    ```python
+        model = FASTopic(50, device='cpu')
+    ```
+
+
+2. **Can I try FASTopic with the languages other than English?**
+
+    Yes!
+    You can pass a multilingual document embedding model, like `paraphrase-multilingual-MiniLM-L12-v2`,
+    and the tokenizer and the stop words for your language, like [pipelines of spaCy](https://spacy.io/models).
+
+    Please refer to the tutorial in Colab.
+    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1_b55QpVQGFBX9PsyrYfNxDzbJ1IjrUdH?usp=sharing)
+
+
+
+
+## Contact
+- We welcome your contributions to this project. Please feel free to submit pull requests.
+- If you encounter any issues, please either directly contact **Xiaobao Wu (xiaobao002@e.ntu.edu.sg)** or leave an issue in the GitHub repo.
+
+
+
 ## Citation
 
-If you want to use our package, please cite our [paper](https://arxiv.org/pdf/2405.17978.pdf) as
+If you want to use FASTopic, please cite our [paper](https://arxiv.org/pdf/2405.17978.pdf) as
 
     @article{wu2024fastopic,
         title={FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm},
@@ -163,7 +250,3 @@ If you want to use our package, please cite our [paper](https://arxiv.org/pdf/24
         journal={arXiv preprint arXiv:2405.17978},
         year={2024}
     }
-
-## Contact
-- We welcome your contributions to this project. Please feel free to submit pull requests.
-- If you encounter any issues, please either directly contact **Xiaobao Wu (xiaobao002@e.ntu.edu.sg)** or leave an issue in the GitHub repo.
