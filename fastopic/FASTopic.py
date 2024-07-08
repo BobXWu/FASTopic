@@ -33,6 +33,7 @@ class FASTopic:
                  device: str=None,
                  save_memory: bool=False,
                  batch_size: int=None,
+                 log_interval: int=10,
                  verbose: bool=False
                 ):
         if device is None:
@@ -50,8 +51,9 @@ class FASTopic:
 
         self.beta = None
         self.train_theta = None
-        self.model = fastopic(num_topics, DT_alpha, TW_alpha, theta_temp)
+        self.model = fastopic(num_topics, theta_temp, DT_alpha, TW_alpha)
 
+        self.log_interval = log_interval
         self.verbose = verbose
         if verbose:
             logger.set_level("DEBUG")
@@ -139,18 +141,15 @@ class FASTopic:
                 for key in rst_dict:
                     loss_rst_dict[key] += rst_dict[key] * batch_data.shape[0]
 
-            if epoch % 10 == 0:
+            if epoch % self.log_interval == 0:
                 output_log = f'Epoch: {epoch:03d}'
                 for key in loss_rst_dict:
                     output_log += f' {key}: {loss_rst_dict[key] / data_size :.3f}'
-
                 logger.info(output_log)
 
         self.beta = self.get_beta()
         self.top_words = self.get_top_words(self.num_top_words)
         self.train_theta = self.transform(self, doc_embeddings=self.doc_embeddings)
-
-        self.transp_DT
 
         return self.top_words, self.train_theta
 
@@ -184,9 +183,11 @@ class FASTopic:
         beta = self.model.get_beta().detach().cpu().numpy()
         return beta
 
-    def get_top_words(self, num_top_words=15):
+    def get_top_words(self, num_top_words=15, verbose=None):
+        if verbose is None:
+            verbose = self.verbose
         beta = self.get_beta()
-        top_words = get_top_words(beta, self.vocab, num_top_words, self.verbose)
+        top_words = get_top_words(beta, self.vocab, num_top_words, verbose)
         return top_words
 
     @property
@@ -211,10 +212,14 @@ class FASTopic:
         return self.model.get_transp_DT(self.doc_embeddings)
 
     def save_model(self, path):
-        torch.save(self.model.state_dict(), f"{path}.zip")
+        torch.save(self.model.state_dict(), path)
 
     def load_model(self, path):
-        self.model.load_state_dict(torch.load(f"{path}.zip"))
+        loaded_dict = torch.load(path)
+        vocab_size, embed_size = loaded_dict["word_embeddings"].shape
+        self.model.init(vocab_size, embed_size)
+
+        self.model.load_state_dict(loaded_dict)
 
     def get_topic(
             self,

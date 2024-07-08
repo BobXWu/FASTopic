@@ -9,9 +9,9 @@ from ._model_utils import pairwise_euclidean_distance
 class fastopic(nn.Module):
     def __init__(self,
                  num_topics: int,
+                 theta_temp: float=1.0,
                  DT_alpha: float=3.0,
-                 TW_alpha: float=2.0,
-                 theta_temp: float=1.0
+                 TW_alpha: float=2.0
                 ):
         super().__init__()
 

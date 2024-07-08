@@ -185,6 +185,7 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 | Predict new documents  |  `.transform(new_docs)` |
 | Get topic-word distribution matrix    |  `.get_beta()` |
 | Get top words of all topics    |  `.get_top_words()` |
+| Get top words and probabilities of a topic    |  `.get_topic(topic_idx=10)` |
 | Get topic weights over the input dataset    |  `.get_topic_weights()` |
 | Get topic activity over time    |  `.topic_activity_over_time(time_slices)` |
 | Save model    |  `.save("./model.zip")` |
@@ -226,11 +227,17 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 
     Yes!
     You can pass a multilingual document embedding model, like `paraphrase-multilingual-MiniLM-L12-v2`,
-    and the tokenizer and the stop words for your language, like [pipelines of spaCy](https://spacy.io/models).
-
+    and the tokenizer and the stop words for your language, like [pipelines of spaCy](https://spacy.io/models).  
     Please refer to the tutorial in Colab.
     [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1_b55QpVQGFBX9PsyrYfNxDzbJ1IjrUdH?usp=sharing)
 
+
+
+3. **Loss value can not decline, and the discovered topics all are repetitive.**
+
+    This may be caused by the less discriminative document embeddings,
+    due to the used document embedding model or extremely short texts as inputs.  
+    Try to increase `DT_alpha` to `5.0`, `10.0` or `15.0`, as `FASTopic(num_topics, DT_alpha=10.0)`.
 
 
 
