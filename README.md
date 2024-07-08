@@ -9,7 +9,7 @@
 
 
 FASTopic is a fast, adaptive, stable, and transferable topic model, different
-from the previous conventional (LDA), VAE-based (ProLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
+from the previous conventional (LDA), VAE-based (ProdLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
 It leverages optimal transport between the document, topic, and word embeddings from pretrained Transformers to model topics and topic distributions of documents.
 
 Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm](https://arxiv.org/pdf/2405.17978.pdf)**
@@ -31,12 +31,13 @@ Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic M
     - [Visualization](#visualization)
   - [Q\&A](#qa)
   - [Contact](#contact)
+  - [Related Resources](#related-resources)
   - [Citation](#citation)
 
 
 ## Tutorials
 
-| Method | API |
+| Tutorial | Link |
 | ------ | --- |
 | A complete tutorial on FASTopic. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bduHWL5_bvsl4EYOgimCOmU-7RfnXqrX?usp=sharing) |
 | FASTopic with other languages. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1_b55QpVQGFBX9PsyrYfNxDzbJ1IjrUdH?usp=sharing) |
@@ -246,6 +247,9 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 - If you encounter any issues, please either directly contact **Xiaobao Wu (xiaobao002@e.ntu.edu.sg)** or leave an issue in the GitHub repo.
 
 
+## Related Resources
+- [**TopMost**](https://github.com/bobxwu/topmost): a topic modeling toolkit, including preprocessing, model training, and evaluations.
+- [**A Survey on Neural Topic Models: Methods, Applications, and Challenges**](https://github.com/BobXWu/Paper-Neural-Topic-Models)
 
 ## Citation
 
