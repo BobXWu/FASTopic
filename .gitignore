@@ -2,6 +2,10 @@
 build
 dist
 *.egg-info
+.vscode
+.pytest_cache
+datasets/
+.python-version
 
 # Sphinx documentation
 docs/build/

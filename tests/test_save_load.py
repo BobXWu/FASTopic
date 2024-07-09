@@ -1,4 +1,4 @@
-import numpy as np
+from numpy.testing import assert_almost_equal
 import pytest
 
 import sys
@@ -25,9 +25,12 @@ def test(cache_path, num_topics):
     model = FASTopic(num_topics=num_topics, epochs=1)
     docs = dataset.train_texts
     model.fit_transform(docs)
+    beta = model.get_beta()
 
-    path = f"{cache_path}/model.zip"
-    model.save_model(path)
+    path = f"{cache_path}/models/"
+    model.save(path=path, model_name='test_model')
 
-    new_model = FASTopic(num_topics=num_topics)
-    new_model.load_model(path)
+    new_model = FASTopic().from_pretrained(f"{path}/test_model/fastopic.pkl")
+    new_beta = new_model.get_beta()
+
+    assert_almost_equal(beta, new_beta)
