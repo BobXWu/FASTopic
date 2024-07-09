@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 from collections import defaultdict
+from pathlib import Path
+import joblib
+from datetime import datetime
 
 import torch
 from topmost.utils._utils import get_top_words
@@ -20,22 +23,23 @@ logger = Logger("WARNING")
 
 
 class FASTopic:
-    def __init__(self,
-                 num_topics: int,
-                 preprocessing: Preprocessing=None,
-                 doc_embed_model: Union[str, callable]="all-MiniLM-L6-v2",
-                 num_top_words: int=15,
-                 DT_alpha: float=3.0,
-                 TW_alpha: float=2.0,
-                 theta_temp: float=1.0,
-                 epochs: int=200,
-                 learning_rate: float=0.002,
-                 device: str=None,
-                 save_memory: bool=False,
-                 batch_size: int=None,
-                 log_interval: int=10,
-                 verbose: bool=False
-                ):
+    def __init__(
+        self,
+        num_topics: int=50,
+        preprocessing: Preprocessing=None,
+        doc_embed_model: Union[str, callable]="all-MiniLM-L6-v2",
+        num_top_words: int=15,
+        DT_alpha: float=3.0,
+        TW_alpha: float=2.0,
+        theta_temp: float=1.0,
+        epochs: int=200,
+        learning_rate: float=0.002,
+        device: str=None,
+        save_memory: bool=False,
+        batch_size: int=None,
+        log_interval: int=10,
+        verbose: bool=False,
+    ):
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
@@ -47,6 +51,7 @@ class FASTopic:
         self.learning_rate = learning_rate
 
         self.preprocessing = preprocessing
+        self.vocab = None
         self.doc_embed_model = doc_embed_model
 
         self.beta = None
@@ -71,17 +76,11 @@ class FASTopic:
         optimizer = torch.optim.Adam(**args_dict)
         return optimizer
 
-    def fit(self,
-            docs: List[str],
-            ):
-
+    def fit(self, docs: List[str]):
         self.fit_transform(docs)
         return self
 
-    def fit_transform(self,
-                      docs: List[str]
-                    ):
-
+    def fit_transform(self, docs: List[str]):
         # Preprocess docs
         data_size = len(docs)
         if self.save_memory:
@@ -91,16 +90,17 @@ class FASTopic:
 
         dataset_device = 'cpu' if self.save_memory else self.device
 
-        dataset = RawDataset(docs,
-                             self.preprocessing,
-                             batch_size=self.batch_size,
-                             device=dataset_device,
-                             pretrained_WE=False,
-                             contextual_embed=True,
-                             doc_embed_model=self.doc_embed_model,
-                             embed_model_device=self.device,
-                             verbose=self.verbose
-                            )
+        dataset = RawDataset(
+            docs,
+            self.preprocessing,
+            batch_size=self.batch_size,
+            device=dataset_device,
+            pretrained_WE=False,
+            contextual_embed=True,
+            doc_embed_model=self.doc_embed_model,
+            embed_model_device=self.device,
+            verbose=self.verbose,
+        )
 
         self.doc_embeddings = torch.as_tensor(dataset.train_contextual_embed)
         self.doc_embed_model = dataset.doc_embed_model
@@ -153,10 +153,7 @@ class FASTopic:
 
         return self.top_words, self.train_theta
 
-    def transform(self,
-                  docs: List[str]=None,
-                  doc_embeddings: np.ndarray=None
-                ):
+    def transform(self, docs: List[str]=None, doc_embeddings: np.ndarray=None):
 
         if docs is None and doc_embeddings is None:
             raise ValueError("Must set either docs or doc_embeddings.")
@@ -211,15 +208,82 @@ class FASTopic:
         """
         return self.model.get_transp_DT(self.doc_embeddings)
 
-    def save_model(self, path):
-        torch.save(self.model.state_dict(), path)
+    def save(self, path: str, model_name: str=None, overwrite: bool=False):
+        """Saves the FASTopic model and its PyTorch model weights to the specified path.
 
-    def load_model(self, path):
-        loaded_dict = torch.load(path)
-        vocab_size, embed_size = loaded_dict["word_embeddings"].shape
-        self.model.init(vocab_size, embed_size)
+        This method saves both the internal state of the FASTopic object (`self`) and the weights of its PyTorch model to the provided path. 
 
-        self.model.load_state_dict(loaded_dict)
+        Args:
+            path (str): The path to save the model files. If the directory doesn't exist, it will be created.
+            model_name (str, optional): The name of the model file. If not provided, a default name will be generated based on the current timestamp. Defaults to None.
+            overwrite (bool, optional): Whether to overwrite existing files in the provided path. Defaults to False.
+
+        Raises:
+            FileExistsError: If `overwrite` is False and a file already exists at the specified path.
+
+        Returns:
+            None
+
+        This method creates the following files in the specified path:
+
+            * `fastopic.pkl`: Contains the serialized state of the FASTopic object using `joblib.dump`.
+            * `pt_model.bin`: Contains the PyTorch model weights saved using `torch.save`.
+        """
+        # Format output paths
+        if model_name is None:
+            model_name = f"fastopic_model_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.pkl"
+        path = Path(path).joinpath(model_name)
+        # Check if path exists
+        if path.exists():
+            if overwrite:
+                logger.info(f"Overwriting model {path}")
+                file_path_fastopic = path.joinpath("fastopic.pkl")
+                file_path_fastopic_model = path.joinpath("pt_model.bin")
+                # Save FASTopic object
+                joblib.dump(self, file_path_fastopic)
+                # Save FASTopic pytorch model
+                torch.save(self.model.state_dict(), file_path_fastopic_model)
+                logger.info(
+                    f"FASTopic model saved in {file_path_fastopic}. Load this model at any time providing this path to `FASTopic.from_pretrained(path)`.\n"
+                    f"FASTopic pytorch model weights saved in {file_path_fastopic_model}."
+                )
+            else:
+                logger.info(f"There is an existing model in the provided path {path}. If you want to save it anyway pass `overwrite=True` as input argument.")
+        else:
+            path.mkdir(parents=True, exist_ok=True)
+            file_path_fastopic = path.joinpath("fastopic.pkl")
+            file_path_fastopic_model = path.joinpath("pt_model.bin")
+            # Save FASTopic object
+            joblib.dump(self, file_path_fastopic)
+            # Save FASTopic pytorch model
+            torch.save(self.model.state_dict(), file_path_fastopic_model)
+            logger.info(
+                f"FASTopic model saved in {file_path_fastopic}. Load this model at any time providing this path to `FASTopic.from_pretrained(path)`.\n"
+                f"FASTopic pytorch model weights saved in {file_path_fastopic_model}."
+            )
+
+    @staticmethod
+    def from_pretrained(file_path: str) -> "FASTopic":
+        """Loads a pre-trained FASTopic model from a saved file.
+
+        This static method allows you to load a previously saved FASTopic model instance.
+
+        Args:
+            file_path (str): The path to the directory containing the serialized FASTopic object (`fastopic.pkl`).
+
+        Returns:
+            FASTopic: An instance of the FASTopic class loaded from the provided file.
+
+        Raises:
+            FileNotFoundError: If the specified `file_path` does not exist.
+
+        This method expects the following files to be present in the provided directory:
+
+            * `fastopic.pkl`: The serialized state of the FASTopic object, saved using `joblib.dump`.
+        """
+        # Load FASTopic pretrained instance
+        pretrained_model = joblib.load(file_path)
+        return pretrained_model
 
     def get_topic(
             self,
