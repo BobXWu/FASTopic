@@ -1,5 +1,33 @@
-import logging
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
+import logging
+from typing import List, Tuple, Union, Mapping, Any, Callable, Iterable
+
+
+class DocEmbedModel:
+    def __init__(
+        self,
+        model: str = "all-MiniLM-L6-v2",
+        normalize_embeddings: bool = False,
+        device: str = "cpu",
+        verbose: bool = False
+    ):
+        self.verbose = verbose
+        self.normalize_embeddings = normalize_embeddings
+
+        if isinstance(model, str):
+            self.model = SentenceTransformer(model, device=device)
+        else:
+            self.model = model
+
+    def encode(self, docs: List[str]) -> np.ndarray:
+        embeddings = self.model.encode(
+            docs,
+            show_progress_bar=self.verbose,
+            normalize_embeddings=self.normalize_embeddings
+        )
+        return embeddings
 
 
 def check_fitted(model):

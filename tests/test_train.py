@@ -39,8 +39,8 @@ def model_test(model, dataset, num_topics):
     assert act.shape == (num_topics, len(np.unique(time_slices)))
 
 def test_models(cache_path, num_topics):
-    download_dataset('NYT', cache_path='./datasets')
-    dataset = DynamicDataset("./datasets/NYT", as_tensor=False)
+    download_dataset("NYT", cache_path=f"{cache_path}/datasets")
+    dataset = DynamicDataset(f"{cache_path}/datasets/NYT", as_tensor=False)
 
     model = FASTopic(num_topics=num_topics, epochs=1, verbose=True)
     model_test(model, dataset, num_topics)

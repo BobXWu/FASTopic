@@ -1,5 +1,6 @@
 from numpy.testing import assert_almost_equal
 import pytest
+import shutil
 
 import sys
 sys.path.append('../')
@@ -19,7 +20,7 @@ def num_topics():
 
 
 def test(cache_path, num_topics):
-    download_dataset('NYT', cache_path='./datasets')
+    download_dataset('NYT', cache_path=f'{cache_path}/datasets')
     dataset = DynamicDataset("./datasets/NYT", as_tensor=False)
 
     model = FASTopic(num_topics=num_topics, epochs=1)
@@ -27,10 +28,17 @@ def test(cache_path, num_topics):
     model.fit_transform(docs)
     beta = model.get_beta()
 
-    path = f"{cache_path}/models/"
-    model.save(path=path, model_name='test_model')
+    path = f"{cache_path}/tmp_save/fastopic.zip"
+    model.save(path)
 
-    new_model = FASTopic().from_pretrained(f"{path}/test_model/fastopic.pkl")
+    new_model = FASTopic.from_pretrained(path, device='cuda')
+    new_model.transform(dataset.test_texts)
     new_beta = new_model.get_beta()
-
     assert_almost_equal(beta, new_beta)
+
+    new_model = FASTopic.from_pretrained(path, device='cpu')
+    new_model.transform(dataset.test_texts)
+    new_beta = new_model.get_beta()
+    assert_almost_equal(beta, new_beta)
+
+    shutil.rmtree(f"{cache_path}/tmp_save")

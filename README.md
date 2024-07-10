@@ -189,8 +189,8 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 | Get top words and probabilities of a topic    |  `.get_topic(topic_idx=10)` |
 | Get topic weights over the input dataset    |  `.get_topic_weights()` |
 | Get topic activity over time    |  `.topic_activity_over_time(time_slices)` |
-| Save model    |  `.save(path=path, model_name='test_model')` |
-| Load model    |  `.from_pretrained(f"{path}/test_model/fastopic.pkl")` |
+| Save model    |  `.save(path=path)` |
+| Load model    |  `.from_pretrained(path=path)` |
 
 
 ### Visualization
@@ -238,8 +238,32 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 
     This may be caused by the less discriminative document embeddings,
     due to the used document embedding model or extremely short texts as inputs.  
-    Try to increase `DT_alpha` to `5.0`, `10.0` or `15.0`, as `FASTopic(num_topics, DT_alpha=10.0)`.
+    Try to
+        (1) normalize document embeddings as `FASTopic(50, normalize_embeddings=True)`;
+        or
+        (2) increase `DT_alpha` to `5.0`, `10.0` or `15.0`, as `FASTopic(num_topics, DT_alpha=10.0)`.
 
+4. **Can I use my own document embedding models?**
+
+   Yes! You can wrap your model and pass it to FASTopic:
+
+
+```python
+    class YourDocEmbedModel:
+        def __init__(self):
+            ...
+
+        def encode(self,
+                docs: List[str],
+                show_progress_bar: bool=False,
+                normalize_embeddings: bool=False
+            ):
+            ...
+            return embeddings
+
+    your_model = YourDocEmbedModel()
+    FASTopic(50, doc_embed_model=your_model)
+```
 
 
 ## Contact
