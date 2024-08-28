@@ -14,8 +14,8 @@ It leverages optimal transport between the document, topic, and word embeddings 
 
 Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm](https://arxiv.org/pdf/2405.17978.pdf)**
 
+https://github.com/user-attachments/assets/ac3f73bb-0705-4943-82a6-31ce3087a4c5
 
-https://github.com/user-attachments/assets/39cfa110-27fb-493b-9495-12a83e8289e8
 
 
 
