@@ -14,7 +14,11 @@ It leverages optimal transport between the document, topic, and word embeddings 
 
 Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm](https://arxiv.org/pdf/2405.17978.pdf)**
 
-<img src='https://github.com/BobXWu/FASTopic/raw/master/docs/img/illustration.svg' with='300pt'></img>
+
+https://github.com/user-attachments/assets/39cfa110-27fb-493b-9495-12a83e8289e8
+
+
+
 
 - [FASTopic](#fastopic)
   - [Tutorials](#tutorials)
@@ -48,13 +52,13 @@ Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic M
 Install FASTopic with `pip`:
 
 ```bash
-    pip install fastopic
+pip install fastopic
 ```
 
 Otherwise, install FASTopic from the source:
 
 ```bash
-    pip install git+https://github.com/bobxwu/FASTopic.git
+pip install git+https://github.com/bobxwu/FASTopic.git
 ```
 
 ## Quick Start
@@ -62,16 +66,16 @@ Otherwise, install FASTopic from the source:
 Discover topics from 20newsgroups with the topic number as `50`.
 
 ```python
-    from fastopic import FASTopic
-    from sklearn.datasets import fetch_20newsgroups
-    from topmost.preprocessing import Preprocessing
+from fastopic import FASTopic
+from sklearn.datasets import fetch_20newsgroups
+from topmost.preprocessing import Preprocessing
 
-    docs = fetch_20newsgroups(subset='all',  remove=('headers', 'footers', 'quotes'))['data']
+docs = fetch_20newsgroups(subset='all',  remove=('headers', 'footers', 'quotes'))['data']
 
-    preprocessing = Preprocessing(vocab_size=10000, stopwords='English')
+preprocessing = Preprocessing(vocab_size=10000, stopwords='English')
 
-    model = FASTopic(50, preprocessing)
-    topic_top_words, doc_topic_dist = model.fit_transform(docs)
+model = FASTopic(50, preprocessing)
+topic_top_words, doc_topic_dist = model.fit_transform(docs)
 
 ```
 
@@ -85,22 +89,22 @@ a numpy array with shape $N \times K$ (number of documents $N$ and number of top
 ### Try FASTopic on your dataset
 
 ```python
-    from fastopic import FASTopic
-    from topmost.preprocessing import Preprocessing
+from fastopic import FASTopic
+from topmost.preprocessing import Preprocessing
 
-    # Prepare your dataset.
-    docs = [
-        'doc 1',
-        'doc 2', # ...
-    ]
+# Prepare your dataset.
+docs = [
+    'doc 1',
+    'doc 2', # ...
+]
 
-    # Preprocess the dataset. This step tokenizes docs, removes stopwords, and sets max vocabulary size, etc.
-    # Pass your tokenizer as:
-    #   preprocessing = Preprocessing(vocab_size=your_vocab_size, tokenizer=your_tokenizer, stopwords=your_stopwords_set)
-    preprocessing = Preprocessing(stopwords='English')
+# Preprocess the dataset. This step tokenizes docs, removes stopwords, and sets max vocabulary size, etc.
+# Pass your tokenizer as:
+#   preprocessing = Preprocessing(vocab_size=your_vocab_size, tokenizer=your_tokenizer, stopwords=your_stopwords_set)
+preprocessing = Preprocessing(stopwords='English')
 
-    model = FASTopic(50, preprocessing)
-    topic_top_words, doc_topic_dist = model.fit_transform(docs)
+model = FASTopic(50, preprocessing)
+topic_top_words, doc_topic_dist = model.fit_transform(docs)
 ```
 
 
@@ -109,20 +113,20 @@ a numpy array with shape $N \times K$ (number of documents $N$ and number of top
 We can get the top words and their probabilities of a topic.
 
 ```python
-    model.get_topic(topic_idx=36)
+model.get_topic(topic_idx=36)
 
-    (('impeachment', 0.008047104),
-    ('mueller', 0.0075936727),
-    ('trump', 0.0066773472),
-    ('committee', 0.0057785935),
-    ('inquiry', 0.005647915))
+(('impeachment', 0.008047104),
+('mueller', 0.0075936727),
+('trump', 0.0066773472),
+('committee', 0.0057785935),
+('inquiry', 0.005647915))
 ```
 
 We can visualize these topic info.
 
 ```python
-    fig = model.visualize_topic(top_n=5)
-    fig.show()
+fig = model.visualize_topic(top_n=5)
+fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_info.png?raw=true' with='300pt'></img>
@@ -134,8 +138,8 @@ We use the learned topic embeddings and `scipy.cluster.hierarchy` to build a hie
 
 
 ```python
-    fig = model.visualize_topic_hierarchy()
-    fig.show()
+fig = model.visualize_topic_hierarchy()
+fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_hierarchy.png?raw=true' with='300pt'></img>
@@ -147,8 +151,8 @@ We use the learned topic embeddings and `scipy.cluster.hierarchy` to build a hie
 We plot the weights of topics in the given dataset.
 
 ```python
-    fig = model.visualize_topic_weights(top_n=20, height=500)
-    fig.show()
+fig = model.visualize_topic_weights(top_n=20, height=500)
+fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_weight.png?raw=true' with='300pt'></img>
@@ -164,9 +168,9 @@ We additionally input the time slices of documents, `time_slices` to compute and
 
 
 ```python
-    act = model.topic_activity_over_time(time_slices)
-    fig = model.visualize_topic_activity(top_n=6, topic_activity=act, time_slices=time_slices)
-    fig.show()
+act = model.topic_activity_over_time(time_slices)
+fig = model.visualize_topic_activity(top_n=6, topic_activity=act, time_slices=time_slices)
+fig.show()
 ```
 
 <img src='https://github.com/BobXWu/FASTopic/blob/master/tutorials/topic_activity.png?raw=true' with='300pt'></img>
@@ -214,13 +218,13 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 
 
     ```python
-        model = FASTopic(50, save_memory=True, batch_size=2000)
+    model = FASTopic(50, save_memory=True, batch_size=2000)
     ```
 
     Or you can run FASTopic on the CPU as
 
     ```python
-        model = FASTopic(50, device='cpu')
+    model = FASTopic(50, device='cpu')
     ```
 
 
@@ -248,7 +252,7 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
    Yes! You can wrap your model and pass it to FASTopic:
 
 
-```python
+    ```python
     class YourDocEmbedModel:
         def __init__(self):
             ...
@@ -263,7 +267,7 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 
     your_model = YourDocEmbedModel()
     FASTopic(50, doc_embed_model=your_model)
-```
+    ```
 
 
 ## Contact
