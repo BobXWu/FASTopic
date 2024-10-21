@@ -8,11 +8,12 @@
 [![Contributors](https://img.shields.io/github/contributors/bobxwu/fastopic)](https://github.com/bobxwu/fastopic/graphs/contributors/)
 
 
+**NeurIPS 2024 paper**: **[FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model](https://arxiv.org/pdf/2405.17978.pdf)**
+
 FASTopic is a fast, adaptive, stable, and transferable topic model, different
 from the previous conventional (LDA), VAE-based (ProdLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
 It leverages optimal transport between the document, topic, and word embeddings from pretrained Transformers to model topics and topic distributions of documents.
 
-Check our paper: **[FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm](https://arxiv.org/pdf/2405.17978.pdf)**
 
 
 https://github.com/user-attachments/assets/42fc1f2a-2dc9-49c0-baf2-97b6fd6aea70
@@ -117,11 +118,11 @@ We can get the top words and their probabilities of a topic.
 ```python
 model.get_topic(topic_idx=36)
 
-(('impeachment', 0.008047104),
-('mueller', 0.0075936727),
-('trump', 0.0066773472),
-('committee', 0.0057785935),
-('inquiry', 0.005647915))
+(('cancer', 0.004797671),
+ ('monkeypox', 0.0044828397),
+ ('certificates', 0.004410268),
+ ('redfield', 0.004407463),
+ ('administering', 0.0043857736))
 ```
 
 We can visualize these topic info.
