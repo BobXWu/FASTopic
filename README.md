@@ -10,6 +10,9 @@
 
 **NeurIPS 2024 paper**: **[FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model](https://arxiv.org/pdf/2405.17978.pdf)**
 
+[[TowardsDataScience Blog]](https://medium.com/@xiaobaowu/easy-fast-and-effective-topic-modeling-for-beginners-with-fastopic-2836781765f0)
+[[Huggingface Blog]](https://huggingface.co/blog/bobxwu/fastopic)
+
 FASTopic is a fast, adaptive, stable, and transferable topic model, different
 from the previous conventional (LDA), VAE-based (ProdLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
 It leverages optimal transport between the document, topic, and word embeddings from pretrained Transformers to model topics and topic distributions of documents.
