@@ -8,16 +8,23 @@
 [![Contributors](https://img.shields.io/github/contributors/bobxwu/fastopic)](https://github.com/bobxwu/fastopic/graphs/contributors/)
 
 
-**NeurIPS 2024 paper**: **[FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model](https://arxiv.org/pdf/2405.17978.pdf)**
-
-[[TowardsDataScience Blog]](https://medium.com/@xiaobaowu/easy-fast-and-effective-topic-modeling-for-beginners-with-fastopic-2836781765f0)
+**[FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model (NeurIPS 2024)](https://arxiv.org/pdf/2405.17978.pdf)**  
+[[Video]](https://recorder-v3.slideslive.com/?share=95127&s=a3c72f9a-4147-4cf0-a7d0-d95e45320df8)  
+[[TowardsDataScience Blog]](https://medium.com/@xiaobaowu/easy-fast-and-effective-topic-modeling-for-beginners-with-fastopic-2836781765f0)  
 [[Huggingface Blog]](https://huggingface.co/blog/bobxwu/fastopic)
 
 FASTopic is a fast, adaptive, stable, and transferable topic model, different
 from the previous conventional (LDA), VAE-based (ProdLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
 It leverages optimal transport between the document, topic, and word embeddings from pretrained Transformers to model topics and topic distributions of documents.
 
+If you want to use FASTopic, please cite our [paper](https://arxiv.org/pdf/2405.17978.pdf) as
 
+    @article{wu2024fastopic,
+        title={FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm},
+        author={Wu, Xiaobao and Nguyen, Thong and Zhang, Delvin Ce and Wang, William Yang and Luu, Anh Tuan},
+        journal={arXiv preprint arXiv:2405.17978},
+        year={2024}
+    }
 
 https://github.com/user-attachments/assets/42fc1f2a-2dc9-49c0-baf2-97b6fd6aea70
 
@@ -42,7 +49,6 @@ https://github.com/user-attachments/assets/42fc1f2a-2dc9-49c0-baf2-97b6fd6aea70
   - [Q\&A](#qa)
   - [Contact](#contact)
   - [Related Resources](#related-resources)
-  - [Citation](#citation)
 
 
 ## Tutorials
@@ -285,13 +291,3 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 - [**TopMost**](https://github.com/bobxwu/topmost): a topic modeling toolkit, including preprocessing, model training, and evaluations.
 - [**A Survey on Neural Topic Models: Methods, Applications, and Challenges**](https://github.com/BobXWu/Paper-Neural-Topic-Models)
 
-## Citation
-
-If you want to use FASTopic, please cite our [paper](https://arxiv.org/pdf/2405.17978.pdf) as
-
-    @article{wu2024fastopic,
-        title={FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm},
-        author={Wu, Xiaobao and Nguyen, Thong and Zhang, Delvin Ce and Wang, William Yang and Luu, Anh Tuan},
-        journal={arXiv preprint arXiv:2405.17978},
-        year={2024}
-    }
