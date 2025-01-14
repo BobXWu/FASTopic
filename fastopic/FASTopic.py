@@ -1,20 +1,16 @@
 import numpy as np
+import torch
 import pandas as pd
 from collections import defaultdict
 from pathlib import Path
-
-import torch
-from topmost.utils._utils import get_top_words
-from topmost.data import RawDataset
-from topmost.preprocessing import Preprocessing
-
 from tqdm import tqdm
+
 
 from . import _plot
 from ._fastopic import fastopic
-from ._utils import Logger, check_fitted, DocEmbedModel
+from ._utils import Logger, assert_fitted, check_fitted, DocEmbedModel, Dataset, get_top_words
 
-from typing import List, Tuple, Union, Mapping, Any, Callable, Iterable, Literal
+from typing import List, Union, Callable
 
 
 logger = Logger("WARNING")
@@ -24,26 +20,24 @@ class FASTopic:
     def __init__(
         self,
         num_topics: int,
-        preprocessing: Preprocessing=None,
-        doc_embed_model: Union[str, callable]="all-MiniLM-L6-v2",
-        num_top_words: int=15,
-        DT_alpha: float=3.0,
-        TW_alpha: float=2.0,
-        theta_temp: float=1.0,
-        epochs: int=200,
-        learning_rate: float=0.002,
-        device: str=None,
-        normalize_embeddings: bool=False,
-        save_memory: bool=False,
-        batch_size: int=None,
-        log_interval: int=10,
-        verbose: bool=False,
+        preprocess: Callable = None,
+        num_top_words: int = 15,
+        device: str = None,
+        normalize_embeddings: bool = False,
+        doc_embed_model: Union[str, callable] = "all-MiniLM-L6-v2",
+        DT_alpha: float = 3.0,
+        TW_alpha: float = 2.0,
+        theta_temp: float = 1.0,
+        low_memory: bool = False,
+        low_memory_batch_size: int = None,
+        verbose: bool = False,
+        log_interval: int = 10,
     ):
         """FASTopic initialization.
 
         Args:
             num_topics: The number of topics.
-            preprocessing: preprocessing class from topmost.preprocessing.Preprocessing
+            preprocess: preprocess class from topmost.preprocess.Preprocess or user-defined module.
             doc_embed_model: The used document embedding model.
                              This can be your callable model that implements `.encode(docs)`.
                              This can also be a model name in sentence-transformers.
@@ -53,15 +47,10 @@ class FASTopic:
             TW_alpha: The sinkhorn alpha between topic embeddings and word embeddings.
             theta_temp: The temperature parameter of the softmax used
                         to compute doc topic distributions during testing.
-            epochs: The number of epochs.
-            learning_rate: The learning rate.
             device: The device.
             normalize_embeddings: Set this to True to normalize document embeddings.
-                                  This parameter may not be effective
-                                  when you use your own document embedding model.
-            save_memory: Set this to True to learn with a batch of documents at each time.
-                         This uses less memory.
-            batch_size: The batch size used when save_memory is True.
+                                This parameter may not be effective
+                                when you use your own document embedding model.
             log_interval: The interval to print logs during training.
             verbose: Changes the verbosity of the model, Set to True if you want
                      to track the stages of the model.
@@ -70,23 +59,22 @@ class FASTopic:
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
-        self.save_memory = save_memory
-        self.batch_size = batch_size
 
         self.num_top_words = num_top_words
-        self.epochs = epochs
-        self.learning_rate = learning_rate
-
-        self.preprocessing = preprocessing
         self.doc_embed_model = doc_embed_model
-        self.vocab = None
-        self.doc_embedder = None
-        self.train_doc_embeddings = None
         self.normalize_embeddings = normalize_embeddings
+        self.low_memory = low_memory
+        self.low_memory_batch_size = low_memory_batch_size
 
         self.beta = None
         self.train_theta = None
         self.model = fastopic(num_topics, theta_temp, DT_alpha, TW_alpha)
+
+        if preprocess is None:
+            from topmost import Preprocess
+            self.preprocess = Preprocess(verbose=verbose)
+        else:
+            self.preprocess = preprocess
 
         self.log_interval = log_interval
         self.verbose = verbose
@@ -108,82 +96,114 @@ class FASTopic:
 
     def fit(
         self,
-        docs: List[str]
+        docs: List[str],
+        epochs: int = 200,
+        learning_rate: float = 0.002,
+        preset_doc_embeddings: np.ndarray = None,
     ):
-        self.fit_transform(docs)
+        self.fit_transform(docs, epochs, learning_rate, preset_doc_embeddings)
         return self
 
-    def fit_transform(self, docs: List[str]):
+    def fit_transform(
+        self,
+        docs: List[str],
+        epochs: int = 200,
+        learning_rate: float = 0.002,
+        preset_doc_embeddings: np.ndarray = None,
+    ):
+        """
+        epochs: The number of epochs.
+        learning_rate: The learning rate.
+        low_memory: Set this to True to learn with a batch of documents at each time.
+                     This uses less memory.
+        batch_size: The batch size is used when low_memory is True.
+        """
         # Preprocess docs
         data_size = len(docs)
-        if self.save_memory:
-            assert self.batch_size is not None
+        if self.low_memory:
+            logger.info("Using low memory mode.")
+            assert self.low_memory_batch_size is not None
+            self.batch_size = self.low_memory_batch_size
+            dataset_device = 'cpu'
         else:
             self.batch_size = data_size
+            dataset_device = self.device
 
-        dataset_device = 'cpu' if self.save_memory else self.device
+        # Fine-tune the model if it is already fitted.
+        if check_fitted(self):
+            logger.info("Fine-tuning the model.")
+            _fitted = True
+        else:
+            logger.info("First fit the model.")
+            _fitted = False
 
-        self.doc_embedder = DocEmbedModel(self.doc_embed_model, self.normalize_embeddings, self.device)
+        # Create doc_embedder.
+        self.doc_embedder = DocEmbedModel(self.doc_embed_model, self.device, self.normalize_embeddings, self.verbose)
 
-        dataset = RawDataset(
+        # Create the dataset.
+        dataset = Dataset(
             docs,
-            self.preprocessing,
+            doc_embedder=self.doc_embedder,
+            preprocess=self.preprocess,
             batch_size=self.batch_size,
             device=dataset_device,
-            pretrained_WE=False,
-            contextual_embed=True,
-            doc_embed_model=self.doc_embedder,
-            embed_model_device=self.device,
-            verbose=self.verbose,
+            low_memory=self.low_memory,
+            preset_doc_embeddings=preset_doc_embeddings
         )
 
-        self.train_doc_embeddings = torch.as_tensor(dataset.train_contextual_embed)
-
-        if not self.save_memory:
+        self.train_doc_embeddings = torch.as_tensor(dataset.doc_embeddings)
+        if not self.low_memory:
             self.train_doc_embeddings = self.train_doc_embeddings.to(self.device)
 
-        self.vocab = dataset.vocab
-        embed_size = dataset.contextual_embed_size
         vocab_size = dataset.vocab_size
+        doc_embed_size = dataset.doc_embed_size
 
-        self.model.init(vocab_size, embed_size)
+        if not _fitted:
+            self.model.init(vocab_size, doc_embed_size)
+        else:
+            pre_vocab = self.vocab
+            self.model.init(
+                vocab_size,
+                doc_embed_size,
+                _fitted,
+                pre_vocab,
+                dataset.vocab
+            )
+
+        self.vocab = dataset.vocab
         self.model = self.model.to(self.device)
 
-        optimizer = self.make_optimizer(self.learning_rate)
+        optimizer = self.make_optimizer(learning_rate)
 
+        # Start training.
         self.model.train()
-        for epoch in tqdm(range(1, self.epochs + 1), desc="Training FASTopic"):
-
+        for epoch in tqdm(range(1, epochs + 1), desc="Training FASTopic"):
             loss_rst_dict = defaultdict(float)
 
-            for batch_data in dataset.train_dataloader:
-
-                batch_bow = batch_data[:, :vocab_size]
-                batch_doc_emb = batch_data[:, vocab_size:]
-
-                if self.save_memory:
-                    batch_doc_emb = batch_doc_emb.to(self.device)
+            for batch_bow, batch_doc_embed in dataset.dataloader:
+                if self.low_memory:
+                    batch_doc_embed = batch_doc_embed.to(self.device)
                     batch_bow = batch_bow.to(self.device)
 
-                rst_dict = self.model(batch_bow, batch_doc_emb)
-                batch_loss = rst_dict['loss']
+                rst_dict = self.model(batch_bow, batch_doc_embed)
+                batch_loss = rst_dict["loss"]
 
                 optimizer.zero_grad()
                 batch_loss.backward()
                 optimizer.step()
 
                 for key in rst_dict:
-                    loss_rst_dict[key] += rst_dict[key] * batch_data.shape[0]
+                    loss_rst_dict[key] += rst_dict[key] * batch_bow.shape[0]
 
             if epoch % self.log_interval == 0:
-                output_log = f'Epoch: {epoch:03d}'
+                output_log = f"Epoch: {epoch:03d}"
                 for key in loss_rst_dict:
-                    output_log += f' {key}: {loss_rst_dict[key] / data_size :.3f}'
+                    output_log += f" {key}: {loss_rst_dict[key] / data_size :.3f}"
                 logger.info(output_log)
 
         self.beta = self.get_beta()
         self.top_words = self.get_top_words(self.num_top_words)
-        self.train_theta = self.transform(self, doc_embeddings=self.train_doc_embeddings)
+        self.train_theta = self.transform(self, self.train_doc_embeddings)
 
         return self.top_words, self.train_theta
 
@@ -201,7 +221,7 @@ class FASTopic:
 
         if doc_embeddings is None:
             doc_embeddings = torch.as_tensor(self.doc_embedder.encode(docs))
-            if not self.save_memory:
+            if not self.low_memory:
                 doc_embeddings = doc_embeddings.to(self.device)
 
         with torch.no_grad():
@@ -260,7 +280,7 @@ class FASTopic:
         Returns:
             None
         """
-        check_fitted(self)
+        assert_fitted(self)
 
         path = Path(path)
         parent_dir = path.parent
@@ -277,11 +297,13 @@ class FASTopic:
         }
         torch.save(state, path)
 
-
     @classmethod
     def from_pretrained(
             cls,
             path: str,
+            preprocess: Callable = None,
+            low_memory: bool = None,
+            low_memory_batch_size: int = None,
             device: str=None
         ):
         """Loads a pre-trained FASTopic model from a saved file.
@@ -309,14 +331,25 @@ class FASTopic:
         instance_dict = state["instance_dict"]
         instance_dict["device"] = device
 
+        if preprocess:
+            instance_dict["preprocess"] = preprocess
+        if low_memory:
+            instance_dict["low_memory"] = low_memory
+            instance_dict["low_memory_batch_size"] = low_memory_batch_size
+
         instance = cls.__new__(cls)
         instance.__dict__.update(instance_dict)
 
         instance.doc_embedder = DocEmbedModel(
             instance_dict["doc_embed_model"],
-            instance_dict["normalize_embeddings"],
-            instance_dict["device"],
+            device=instance_dict["device"],
+            normalize_embeddings=instance_dict["normalize_embeddings"]
         )
+
+        if instance.verbose:
+            logger.set_level("DEBUG")
+        else:
+            logger.set_level("WARNING")
 
         return instance
 
@@ -326,31 +359,29 @@ class FASTopic:
             num_top_words: int=5
         ):
 
-        check_fitted(self)
+        assert_fitted(self)
         words = self.top_words[topic_idx].split()[:num_top_words]
         scores = np.sort(self.beta[topic_idx])[:-(num_top_words + 1):-1]
 
         return tuple(zip(words, scores))
 
     def get_topic_weights(self):
-        check_fitted(self)
-
+        assert_fitted(self)
         topic_weights = self.transp_DT.sum(0)
         return topic_weights
 
     def visualize_topic(self, **args):
-        check_fitted(self)
+        assert_fitted(self)
         return _plot.visualize_topic(self, **args)
 
     def visualize_topic_hierarchy(self, **args):
-        check_fitted(self)
+        assert_fitted(self)
         return _plot.visualize_hierarchy(self, **args)
 
     def topic_activity_over_time(self,
                                  time_slices: List[int],
                                 ):
-        check_fitted(self)
-
+        assert_fitted(self)
         topic_activity = self.transp_DT
         topic_activity *= self.transp_DT.shape[0]
 
@@ -363,9 +394,9 @@ class FASTopic:
         return topic_activity
 
     def visualize_topic_activity(self, **args):
-        check_fitted(self)
+        assert_fitted(self)
         return _plot.visualize_activity(self, **args)
 
     def visualize_topic_weights(self, **args):
-        check_fitted(self)
+        assert_fitted(self)
         return _plot.visualize_topic_weights(self, **args)

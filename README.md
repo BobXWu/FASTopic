@@ -8,7 +8,7 @@
 [![Contributors](https://img.shields.io/github/contributors/bobxwu/fastopic)](https://github.com/bobxwu/fastopic/graphs/contributors/)
 
 
-**[FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model (NeurIPS 2024)](https://arxiv.org/pdf/2405.17978.pdf)**  
+**[[NeurIPS 2024] FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model](https://arxiv.org/pdf/2405.17978.pdf)**  
 [[Video]](https://recorder-v3.slideslive.com/?share=95127&s=a3c72f9a-4147-4cf0-a7d0-d95e45320df8)  
 [[TowardsDataScience Blog]](https://medium.com/@xiaobaowu/easy-fast-and-effective-topic-modeling-for-beginners-with-fastopic-2836781765f0)  
 [[Huggingface Blog]](https://huggingface.co/blog/bobxwu/fastopic)
@@ -19,10 +19,10 @@ It leverages optimal transport between the document, topic, and word embeddings 
 
 If you want to use FASTopic, please cite our [paper](https://arxiv.org/pdf/2405.17978.pdf) as
 
-    @article{wu2024fastopic,
-        title={FASTopic: A Fast, Adaptive, Stable, and Transferable Topic Modeling Paradigm},
-        author={Wu, Xiaobao and Nguyen, Thong and Zhang, Delvin Ce and Wang, William Yang and Luu, Anh Tuan},
-        journal={arXiv preprint arXiv:2405.17978},
+    @inproceedings{wu2024fastopic,
+        title={FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model},
+        author={Wu, Xiaobao and Nguyen, Thong Thanh and Zhang, Delvin Ce and Wang, William Yang and Luu, Anh Tuan},
+        booktitle={The Thirty-eighth Annual Conference on Neural Information Processing Systems},
         year={2024}
     }
 
@@ -39,6 +39,7 @@ https://github.com/user-attachments/assets/42fc1f2a-2dc9-49c0-baf2-97b6fd6aea70
   - [Quick Start](#quick-start)
   - [Usage](#usage)
     - [Try FASTopic on your dataset](#try-fastopic-on-your-dataset)
+    - [Save and Load](#save-and-load)
     - [Topic info](#topic-info)
     - [Topic hierarchy](#topic-hierarchy)
     - [Topic weights](#topic-weights)
@@ -79,19 +80,19 @@ Discover topics from 20newsgroups with the topic number as `50`.
 
 ```python
 from fastopic import FASTopic
+from topmost import Preprocess
 from sklearn.datasets import fetch_20newsgroups
-from topmost.preprocessing import Preprocessing
 
-docs = fetch_20newsgroups(subset='all',  remove=('headers', 'footers', 'quotes'))['data']
+docs = fetch_20newsgroups(subset='all', remove=('headers', 'footers', 'quotes'))['data']
 
-preprocessing = Preprocessing(vocab_size=10000, stopwords='English')
+preprocess = Preprocess(vocab_size=10000)
 
-model = FASTopic(50, preprocessing)
-topic_top_words, doc_topic_dist = model.fit_transform(docs)
+model = FASTopic(50, preprocess)
+top_words, doc_topic_dist = model.fit_transform(docs)
 
 ```
 
-`topic_top_words` is a list containing the top words of discovered topics.
+`top_words` is a list containing the top words of discovered topics.
 `doc_topic_dist` is the topic distributions of documents (doc-topic distributions),
 a numpy array with shape $N \times K$ (number of documents $N$ and number of topics $K$).
 
@@ -102,7 +103,7 @@ a numpy array with shape $N \times K$ (number of documents $N$ and number of top
 
 ```python
 from fastopic import FASTopic
-from topmost.preprocessing import Preprocessing
+from topmost.preprocess import Preprocess
 
 # Prepare your dataset.
 docs = [
@@ -111,14 +112,28 @@ docs = [
 ]
 
 # Preprocess the dataset. This step tokenizes docs, removes stopwords, and sets max vocabulary size, etc.
-# Pass your tokenizer as:
-#   preprocessing = Preprocessing(vocab_size=your_vocab_size, tokenizer=your_tokenizer, stopwords=your_stopwords_set)
-preprocessing = Preprocessing(stopwords='English')
+# preprocess = Preprocess(vocab_size=your_vocab_size, tokenizer=your_tokenizer, stopwords=your_stopwords_set)
+preprocess = Preprocess()
 
-model = FASTopic(50, preprocessing)
-topic_top_words, doc_topic_dist = model.fit_transform(docs)
+model = FASTopic(50, preprocess)
+top_words, doc_topic_dist = model.fit_transform(docs)
 ```
 
+
+### Save and Load
+
+```python
+
+path = "./tmp/fastopic.zip"
+model.save(path)
+
+loaded_model = FASTopic.from_pretrained(path)
+beta = loaded_model.get_beta()
+
+doc_topic_dist = loaded_model.transform(docs)
+# Keep training
+loaded_model.fit_transform(docs, epochs=1)
+```
 
 ### Topic info
 
@@ -225,12 +240,12 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 
 1. **Meet the `out of memory` error. My GPU memory is not enough due to large datasets. What should I do?**
 
-    You can try to set `save_memory=True` and  `batch_size` in FASTopic.
-    `batch_size` should not be too small, otherwise it may damage performance.
+    You can try to set `low_memory=True` and  `low_memory_batch_size` in FASTopic.
+    `low_memory_batch_size` should not be too small, otherwise it may damage performance.
 
 
     ```python
-    model = FASTopic(50, save_memory=True, batch_size=2000)
+    model = FASTopic(50, low_memory=True, low_memory_batch_size=2000)
     ```
 
     Or you can run FASTopic on the CPU as
@@ -278,8 +293,32 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
             return embeddings
 
     your_model = YourDocEmbedModel()
-    FASTopic(50, doc_embed_model=your_model)
+    model = FASTopic(50, doc_embed_model=your_model)
     ```
+
+5. **Can I use my own preprocess module?**
+
+   Yes! You can wrap your module and pass it to FASTopic:
+
+    ```python
+    class YourPreprocess:
+        def __init__(self):
+            ...
+
+        def preprocess(self, docs: List[str]):
+            ...
+            train_bow = ...
+            vocab = ...
+
+            return {
+                "train_bow": train_bow, # sparse matrix
+                "vocab": vocab # List[str]
+            }
+
+    your_preprocess = YourPreprocess()
+    model = FASTopic(50, preprocess=your_preprocess)
+    ```
+
 
 
 ## Contact
@@ -290,4 +329,3 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
 ## Related Resources
 - [**TopMost**](https://github.com/bobxwu/topmost): a topic modeling toolkit, including preprocessing, model training, and evaluations.
 - [**A Survey on Neural Topic Models: Methods, Applications, and Challenges**](https://github.com/BobXWu/Paper-Neural-Topic-Models)
-
