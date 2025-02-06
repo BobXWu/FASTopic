@@ -279,6 +279,7 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
     Since FASTopic mainly depends on pytorch and sentence-transformers, you can set random seeds before running FASTopic to get the same results every time:
 
     ```python
+    import numpy as np
     import torch
 
     torch.manual_seed(0)
