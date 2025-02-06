@@ -274,7 +274,20 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
         or
         (2) increase `DT_alpha` to `5.0`, `10.0` or `15.0`, as `FASTopic(num_topics, DT_alpha=10.0)`.
 
-4. **Can I use my own document embedding models?**
+4. **How to reproduce the results? How to get the same results every time?**
+
+    Since FASTopic mainly depends on pytorch and sentence-transformers, you can set random seeds before running FASTopic to get the same results every time:
+
+    ```python
+    import torch
+
+    torch.manual_seed(0)
+    np.random.seed(0)
+
+    model.fit_transform(docs)
+    ```
+   
+5. **Can I use my own document embedding models?**
 
    Yes! You can wrap your model and pass it to FASTopic:
 
@@ -296,7 +309,7 @@ We summarize the frequently used APIs of FASTopic here. It's easier for you to l
     model = FASTopic(50, doc_embed_model=your_model)
     ```
 
-5. **Can I use my own preprocess module?**
+6. **Can I use my own preprocess module?**
 
    Yes! You can wrap your module and pass it to FASTopic:
 
