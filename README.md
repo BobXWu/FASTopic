@@ -8,9 +8,6 @@
 [![Contributors](https://img.shields.io/github/contributors/bobxwu/fastopic)](https://github.com/bobxwu/fastopic/graphs/contributors/)
 
 
-
-**[FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model (NeurIPS 2024)](https://arxiv.org/pdf/2405.17978.pdf)**  
-
 [Petr Korab's blog **Topic Modelling in Business Intelligence: FASTopic and BERTopic in Code**](https://towardsdatascience.com/topic-modelling-in-business-intelligence-fastopic-and-bertopic-in-code-2d3949260a37/?sk=9a88660d4e4c64a1d91ad8ede730a520)
 
 [[Video]](https://recorder-v3.slideslive.com/?share=95127&s=a3c72f9a-4147-4cf0-a7d0-d95e45320df8) 
@@ -21,7 +18,7 @@ FASTopic is a fast, adaptive, stable, and transferable topic model, different
 from the previous conventional (LDA), VAE-based (ProdLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
 It leverages optimal transport between the document, topic, and word embeddings from pretrained Transformers to model topics and topic distributions of documents.
 
-If you want to use FASTopic, please cite our [paper](https://arxiv.org/pdf/2405.17978.pdf) as
+If you want to use FASTopic, please cite our [NeurIPS 2024 paper](https://arxiv.org/pdf/2405.17978.pdf) as
 
     @inproceedings{wu2024fastopic,
         title={FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model},
