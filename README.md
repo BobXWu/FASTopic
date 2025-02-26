@@ -8,10 +8,14 @@
 [![Contributors](https://img.shields.io/github/contributors/bobxwu/fastopic)](https://github.com/bobxwu/fastopic/graphs/contributors/)
 
 
-**[[NeurIPS 2024] FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model](https://arxiv.org/pdf/2405.17978.pdf)**  
-[[Video]](https://recorder-v3.slideslive.com/?share=95127&s=a3c72f9a-4147-4cf0-a7d0-d95e45320df8)  
-[[TowardsDataScience Blog]](https://medium.com/@xiaobaowu/easy-fast-and-effective-topic-modeling-for-beginners-with-fastopic-2836781765f0)  
-[[Huggingface Blog]](https://huggingface.co/blog/bobxwu/fastopic)
+
+**[FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model (NeurIPS 2024)](https://arxiv.org/pdf/2405.17978.pdf)**  
+
+[Petr Korab's blog **Topic Modelling in Business Intelligence: FASTopic and BERTopic in Code**](https://towardsdatascience.com/topic-modelling-in-business-intelligence-fastopic-and-bertopic-in-code-2d3949260a37/?sk=9a88660d4e4c64a1d91ad8ede730a520)
+
+[[Video]](https://recorder-v3.slideslive.com/?share=95127&s=a3c72f9a-4147-4cf0-a7d0-d95e45320df8) 
+[[TowardsDataScience Blog]](https://medium.com/@xiaobaowu/easy-fast-and-effective-topic-modeling-for-beginners-with-fastopic-2836781765f0) 
+[[Huggingface Blog]](https://huggingface.co/blog/bobxwu/fastopic)  
 
 FASTopic is a fast, adaptive, stable, and transferable topic model, different
 from the previous conventional (LDA), VAE-based (ProdLDA, ETM), or clustering-based (Top2Vec, BERTopic) methods.
