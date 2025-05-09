@@ -10,6 +10,7 @@
 
 [Petr Korab's blog **Topic Modelling in Business Intelligence: FASTopic and BERTopic in Code**](https://towardsdatascience.com/topic-modelling-in-business-intelligence-fastopic-and-bertopic-in-code-2d3949260a37/?sk=9a88660d4e4c64a1d91ad8ede730a520)
 
+[[NeurIPS 2024 paper]](https://arxiv.org/pdf/2405.17978.pdf)
 [[Video]](https://recorder-v3.slideslive.com/?share=95127&s=a3c72f9a-4147-4cf0-a7d0-d95e45320df8) 
 [[TowardsDataScience Blog]](https://medium.com/@xiaobaowu/easy-fast-and-effective-topic-modeling-for-beginners-with-fastopic-2836781765f0) 
 [[Huggingface Blog]](https://huggingface.co/blog/bobxwu/fastopic)  
@@ -20,13 +21,14 @@ It leverages optimal transport between the document, topic, and word embeddings 
 
 If you want to use FASTopic, please cite our [NeurIPS 2024 paper](https://arxiv.org/pdf/2405.17978.pdf) as
 
-    @inproceedings{wu2024fastopic,
-        title={FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model},
-        author={Wu, Xiaobao and Nguyen, Thong Thanh and Zhang, Delvin Ce and Wang, William Yang and Luu, Anh Tuan},
-        booktitle={The Thirty-eighth Annual Conference on Neural Information Processing Systems},
-        year={2024}
-    }
-
+```bibtex
+@inproceedings{wu2024fastopic,
+    title={FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model},
+    author={Wu, Xiaobao and Nguyen, Thong Thanh and Zhang, Delvin Ce and Wang, William Yang and Luu, Anh Tuan},
+    booktitle={The Thirty-eighth Annual Conference on Neural Information Processing Systems},
+    year={2024}
+}
+```
 https://github.com/user-attachments/assets/42fc1f2a-2dc9-49c0-baf2-97b6fd6aea70
 
 
