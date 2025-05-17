@@ -327,7 +327,7 @@ class FASTopic:
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        state = torch.load(path, map_location=device)
+        state = torch.load(path, map_location=device, weights_only=False)
         instance_dict = state["instance_dict"]
         instance_dict["device"] = device
 
