@@ -34,7 +34,8 @@ def visualize_topic(topic_model,
                     topic_idx: List[int]=None,
                     n_label_words=5,
                     width: int = 250,
-                    height: int = 250
+                    height: int = 250,
+                    topic_labels: List[str]=None,
                 ):
 
     topic_idx = wrap_topic_idx(topic_model, top_n, topic_idx)
@@ -42,7 +43,11 @@ def visualize_topic(topic_model,
     top_words = topic_model.top_words
     beta = topic_model.get_beta()
 
-    subplot_titles = [f"Topic {i}" for i in topic_idx]
+    if topic_labels is None:
+        subplot_titles = [f"Topic {i}" for i in topic_idx]
+    else:
+        assert len(topic_labels) == len(topic_idx), "Labels length must match the number of topics."
+        subplot_titles = [topic_labels[i] for i in topic_idx]
 
     columns = 4
     rows = int(np.ceil(len(topic_idx) / columns))
@@ -113,7 +118,8 @@ def visualize_activity(topic_model,
                        n_label_words:int=5,
                        title: str="<b>Topics Activity over Time</b>",
                        width: int=1000,
-                       height: int=600
+                       height: int=600,
+                       topic_labels: List[str]=None,
                     ):
 
     topic_idx = wrap_topic_idx(topic_model, top_n, topic_idx)
@@ -123,9 +129,12 @@ def visualize_activity(topic_model,
     fig = go.Figure()
     topic_top_words = topic_model.top_words
 
-    legends = []
-    for i, words in enumerate(topic_top_words):
-        legends.append(f"{i}_{'_'.join(words.split()[:n_label_words])}")
+    if topic_labels is None:
+        topic_labels = []
+        for i, words in enumerate(topic_top_words):
+            topic_labels.append(f"{i}_{'_'.join(words.split()[:n_label_words])}")
+    else:
+        assert len(topic_labels) == topic_activity.shape[0], "Labels length must match the number of topics."
 
     labels = np.unique(time_slices).tolist()
 
@@ -137,8 +146,8 @@ def visualize_activity(topic_model,
             mode='lines',
             marker_color=colors[i % 7],
             hoverinfo="text",
-            name=legends[k],
-            hovertext=legends[k])
+            name=topic_labels[k],
+            hovertext=topic_labels[k])
         )
 
     # Styling of the visualization
@@ -176,7 +185,8 @@ def visualize_topic_weights(topic_model,
                             title: str="<b>Topic Weights</b>",
                             width: int=1000,
                             height: int=1000,
-                            _sort: bool=True
+                            _sort: bool=True,
+                            topic_labels: List[str]=None,
                         ):
 
     topic_weights = topic_model.get_topic_weights()
@@ -185,10 +195,10 @@ def visualize_topic_weights(topic_model,
     labels = []
     vals = []
     topic_top_words = topic_model.top_words
-
+    
     for i in topic_idx:
         words = topic_top_words[i]
-        labels.append(f"{i}_{'_'.join(words.split()[:n_label_words])}")
+        labels.append(topic_labels[i] if topic_labels is not None else f"{i}_{'_'.join(words.split()[:n_label_words])}")
         vals.append(topic_weights[i])
 
     if _sort:
@@ -241,7 +251,8 @@ def visualize_hierarchy(topic_model,
                         linkage_function: Callable = None,
                         distance_function: Callable = None,
                         n_label_words: int = 5,
-                        color_threshold: int = None
+                        color_threshold: int = None,
+                        topic_labels: List[str] = None, # labels for the topics
                     ):
 
     topic_embeddings = topic_model.topic_embeddings
@@ -254,14 +265,18 @@ def visualize_hierarchy(topic_model,
         linkage_function = lambda x: sch.linkage(x, 'ward', optimal_ordering=True)
 
     topic_top_words = topic_model.top_words
-    labels = []
-    for i, words in enumerate(topic_top_words):
-        labels.append(f"{i}_{'_'.join(words.split()[:n_label_words])}")
-
+    
+    if topic_labels is None:
+        topic_labels = []
+        for i, words in enumerate(topic_top_words):
+            topic_labels.append(f"{i}_{'_'.join(words.split()[:n_label_words])}")
+    else:
+        assert len(topic_labels) == topic_embeddings.shape[0], "Labels length must match the number of topics."
+        
     fig = ff.create_dendrogram(
         topic_embeddings,
         orientation=orientation,
-        labels=labels,
+        labels=topic_labels,
         distfun=distance_function,
         linkagefun=linkage_function,
         color_threshold=color_threshold
